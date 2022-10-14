@@ -9,7 +9,7 @@
     "url": "https://github.com/Hydrair/debugvars.git"
   },
   "publisher": "hydrair",
-  "version": "0.0.3",
+  "version": "1.0.0",
   "engines": {
     "vscode": "^1.72.0"
   },
