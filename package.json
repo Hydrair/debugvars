@@ -1,16 +1,18 @@
 {
   "name": "extendeddebugging",
   "displayName": "ExtendedDebugging",
-  "description": "",
+  "license": "MIT",
+  "author": "Michael Kainz",
+  "description": "Makes 'input' in launch.json editable.",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.72.0"
   },
   "categories": [
-    "Other"
+    "Other",
+    "Debuggers"
   ],
   "activationEvents": [
-    "onCommand:extendeddebugging.helloWorld",
     "onView:extended"
   ],
   "main": "./out/extension.js",
