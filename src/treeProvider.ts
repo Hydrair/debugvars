@@ -1,22 +1,25 @@
 import * as vscode from 'vscode';
 
+interface LaunchVariable {
+  value: string;
+  label: string;
+}
 export class LaunchProvider implements vscode.TreeDataProvider<Option> {
 
 	private _onDidChangeTreeData: vscode.EventEmitter<Option | undefined | void> = new vscode.EventEmitter<Option | undefined | void>();
 	readonly onDidChangeTreeData: vscode.Event<Option | undefined | void> = this._onDidChangeTreeData.event;
   inputs: {[k:string]: string} = {};
-  folders: readonly vscode.WorkspaceFolder[] | undefined;
+  launchJSON: string;
 
-	constructor(private launchJSON: string ) {
-    this.folders =vscode.workspace.workspaceFolders; 
+	constructor(private rootPath: string ) {
+    this.launchJSON = `${rootPath}/.vscode/launch.json`;
     this.init();
 	}
 
   private init(): void {
-    if(this.folders){
+    if(this.launchJSON){
       const config = vscode.workspace.getConfiguration(
-        'launch',
-        this.folders[0].uri
+        'launch'
       );
       this.inputs=JSON.parse(JSON.stringify(config.get('variables')));
     }
@@ -48,26 +51,25 @@ export class LaunchProvider implements vscode.TreeDataProvider<Option> {
     }
 	}
 
+  private toOpt(option: LaunchVariable){
+    const item =new Option(option.label,option.value,vscode.TreeItemCollapsibleState.None);
+    item.command = {
+      title: 'Edit',
+      command: "debugvars.editValue",
+      arguments: [item]
+    };
+    return item; 
+  };
+
   private getInputsInLaunchJson(){
       const opts = [];
-      if(this.folders){
-        
-        const toOpt = (option: {
-          default: string;id:string}) =>{
-          const item =new Option(option.id,option.default,vscode.TreeItemCollapsibleState.None);
-          item.command = {
-            title: 'Edit',
-            command: "extendeddebugging.editValue",
-            arguments: [item]
-          };
-          return item; 
-        };
-  
+      if(this.launchJSON){ 
         for (const key in this.inputs) {
-          opts.push(toOpt({default:this.inputs[key],id:key}));
+          opts.push(this.toOpt(
+            {value:this.inputs[key],label:key}
+          ));
         }
       }
-
       return opts;
   }
 
@@ -78,12 +80,9 @@ export class LaunchProvider implements vscode.TreeDataProvider<Option> {
     });
     if( newValue !== undefined ){
       this.inputs[element.label] = newValue;
-      element.value = newValue;
-      const folders =vscode.workspace.workspaceFolders; 
-      if(folders){
+      if(this.launchJSON){
         const config = vscode.workspace.getConfiguration(
           'launch',
-          folders[0].uri
         );
         config.update(`variables`,this.inputs);
       }

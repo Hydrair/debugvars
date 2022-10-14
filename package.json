@@ -1,10 +1,10 @@
 {
-  "name": "extendeddebugging",
-  "displayName": "ExtendedDebugging",
+  "name": "debugvars",
+  "displayName": "DebugVars",
   "license": "MIT",
   "author": "Michael Kainz",
   "description": "Makes 'input' in launch.json editable.",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "engines": {
     "vscode": "^1.72.0"
   },
@@ -21,13 +21,13 @@
       "debug": [
         {
           "id": "extended",
-          "name": "Extended Debugging"
+          "name": "Debugging Variables"
         }
       ]
     },
     "commands": [
       {
-        "command": "extendeddebugging.editValue",
+        "command": "debugvars.editValue",
         "title": "Edit",
         "icon": {
           "light": "resources/light/edit.svg",
@@ -35,7 +35,7 @@
         }
       },
       {
-        "command": "extendeddebugging.refresh",
+        "command": "debugvars.refresh",
         "title": "Refresh",
         "icon": {
           "light": "resources/light/refresh.svg",
@@ -46,14 +46,14 @@
     "menus": {
       "view/item/context": [
         {
-          "command": "extendeddebugging.editValue",
+          "command": "debugvars.editValue",
           "when": "viewItem == option",
           "group": "inline"
         }
       ],
       "view/title": [
         {
-          "command": "extendeddebugging.refresh",
+          "command": "debugvars.refresh",
           "when": "view == extended",
           "group": "navigation"
         }
