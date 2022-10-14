@@ -9,6 +9,11 @@ export class LaunchProvider implements vscode.TreeDataProvider<Option> {
   inputs: any;
 
 	constructor(private launchJSON: string ) {
+    fs.watch(launchJSON,(eventType)=>{
+      if (eventType === 'change') {
+        this.refresh();
+      }
+    });
 	}
 
 	refresh(): void {
@@ -41,11 +46,13 @@ export class LaunchProvider implements vscode.TreeDataProvider<Option> {
       const toOpt = (option: {
         default: string;id:string,type:string
 }) =>{
-        return new Option(option.id,option.default,option.type,vscode.TreeItemCollapsibleState.None,{
-          title: 'title',
+        const item =new Option(option.id,option.default,option.type,vscode.TreeItemCollapsibleState.None);
+        item.command = {
+          title: 'Edit',
           command: "extendeddebugging.editValue",
-          arguments: [this]
-        },);
+          arguments: [item]
+        };
+        return item; 
       };
 
       const opts = this.inputs.map((input: { id: string;  default: string;type: string; }) => toOpt(input));
@@ -81,7 +88,6 @@ export class LaunchProvider implements vscode.TreeDataProvider<Option> {
       fs.writeFileSync(this.launchJSON,JSON.stringify(editedFile,null,"\t"),{
         encoding: 'utf-8',
       });
-      this.refresh();
     }
   }
 }
@@ -93,7 +99,7 @@ export class Option extends vscode.TreeItem {
     public  value: string,
 		private readonly inputType: string,
 		public readonly collapsibleState: vscode.TreeItemCollapsibleState,
-		public readonly command?: vscode.Command
+		public command?: vscode.Command
 	) {
    
 		super(label, collapsibleState);
