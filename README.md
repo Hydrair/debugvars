@@ -1,10 +1,10 @@
 # DebugVars README
 
-This extensions enables the user to change the `inputs` property of the `launch.json` on-the-fly to enable dynamic debugging
+This extensions enables the user to use the `variables` property of the `launch.json` on-the-fly to enable dynamic debugging
 
 ## Features
 
-When in debug view, there is a tree view listing all the elements of `inputs`. Clicking on one prompts for a new value and writes the edited file back.
+When in debug view, there is a tree view listing all the elements of `variables`. Clicking on one prompts for a new value and writes the edited file back.
 
 ## Requirements
 

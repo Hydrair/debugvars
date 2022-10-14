@@ -3,11 +3,12 @@
   "displayName": "DebugVars",
   "license": "MIT",
   "author": "Michael Kainz",
-  "description": "Makes 'input' in launch.json editable.",
+  "description": "Enables the user to edit variables on-the-fly to start different debug configurations more quickly",
   "repository": {
     "type": "git",
     "url": "https://github.com/Hydrair/debugvars.git"
   },
+  "publisher": "hydrair",
   "version": "0.0.3",
   "engines": {
     "vscode": "^1.72.0"
