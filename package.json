@@ -4,7 +4,7 @@
   "license": "MIT",
   "author": "Michael Kainz",
   "description": "Makes 'input' in launch.json editable.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "engines": {
     "vscode": "^1.72.0"
   },
@@ -28,14 +28,34 @@
     "commands": [
       {
         "command": "extendeddebugging.editValue",
-        "title": "Edit"
+        "title": "Edit",
+        "icon": {
+          "light": "resources/light/edit.svg",
+          "dark": "resources/dark/edit.svg"
+        }
+      },
+      {
+        "command": "extendeddebugging.refresh",
+        "title": "Refresh",
+        "icon": {
+          "light": "resources/light/refresh.svg",
+          "dark": "resources/dark/refresh.svg"
+        }
       }
     ],
     "menus": {
       "view/item/context": [
         {
           "command": "extendeddebugging.editValue",
-          "when": "viewItem == option"
+          "when": "viewItem == option",
+          "group": "inline"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "extendeddebugging.refresh",
+          "when": "view == extended",
+          "group": "navigation"
         }
       ]
     }

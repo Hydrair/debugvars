@@ -1,22 +1,33 @@
-import path = require('node:path');
-import fs = require('node:fs');
 import * as vscode from 'vscode';
 
 export class LaunchProvider implements vscode.TreeDataProvider<Option> {
 
 	private _onDidChangeTreeData: vscode.EventEmitter<Option | undefined | void> = new vscode.EventEmitter<Option | undefined | void>();
 	readonly onDidChangeTreeData: vscode.Event<Option | undefined | void> = this._onDidChangeTreeData.event;
-  inputs: any;
+  inputs: {[k:string]: string} = {};
+  folders: readonly vscode.WorkspaceFolder[] | undefined;
 
 	constructor(private launchJSON: string ) {
-    fs.watch(launchJSON,(eventType)=>{
-      if (eventType === 'change') {
-        this.refresh();
-      }
-    });
+    this.folders =vscode.workspace.workspaceFolders; 
+    this.init();
 	}
 
+  private init(): void {
+    if(this.folders){
+      const config = vscode.workspace.getConfiguration(
+        'launch',
+        this.folders[0].uri
+      );
+      this.inputs=JSON.parse(JSON.stringify(config.get('variables')));
+    }
+  }
+
 	refresh(): void {
+		this._onDidChangeTreeData.fire();
+	}
+
+  refreshManually(): void {
+    this.init();
 		this._onDidChangeTreeData.fire();
 	}
 
@@ -26,7 +37,7 @@ export class LaunchProvider implements vscode.TreeDataProvider<Option> {
 
 	getChildren(element?: Option): Thenable<Option[]> {
 		if (!this.launchJSON) {
-			vscode.window.showInformationMessage('No dependency in empty workspace');
+			vscode.window.showInformationMessage('No launch.json found in workspace');
 			return Promise.resolve([]);
 		}
 
@@ -38,44 +49,27 @@ export class LaunchProvider implements vscode.TreeDataProvider<Option> {
 	}
 
   private getInputsInLaunchJson(){
-    const launchJSONPath = this.launchJSON;
-    if(this.pathExists(launchJSONPath)){
-      // beware of end of line comma
-      this.inputs = this.getLaunchFile().inputs;
-
-      const toOpt = (option: {
-        default: string;id:string,type:string
-}) =>{
-        const item =new Option(option.id,option.default,option.type,vscode.TreeItemCollapsibleState.None);
-        item.command = {
-          title: 'Edit',
-          command: "extendeddebugging.editValue",
-          arguments: [item]
+      const opts = [];
+      if(this.folders){
+        
+        const toOpt = (option: {
+          default: string;id:string}) =>{
+          const item =new Option(option.id,option.default,vscode.TreeItemCollapsibleState.None);
+          item.command = {
+            title: 'Edit',
+            command: "extendeddebugging.editValue",
+            arguments: [item]
+          };
+          return item; 
         };
-        return item; 
-      };
-
-      const opts = this.inputs.map((input: { id: string;  default: string;type: string; }) => toOpt(input));
+  
+        for (const key in this.inputs) {
+          opts.push(toOpt({default:this.inputs[key],id:key}));
+        }
+      }
 
       return opts;
-    } else {
-      return [];
-    }
   }
-
-  private getLaunchFile(){
-    return JSON.parse(fs.readFileSync(this.launchJSON,{encoding: "utf-8"}));
-  }
-
-	private pathExists(p: string): boolean {
-		try {
-			fs.accessSync(p);
-		} catch (err) {
-			return false;
-		}
-
-		return true;
-	}
 
   public async editValue(element: Option){
     const newValue = await vscode.window.showInputBox({
@@ -83,11 +77,17 @@ export class LaunchProvider implements vscode.TreeDataProvider<Option> {
       prompt: `Enter a new value for ${element.label}`,
     });
     if( newValue !== undefined ){
-      const editedFile = this.getLaunchFile();
-      editedFile.inputs.find((e: { id: string; }) => e.id === element.label).default = newValue;
-      fs.writeFileSync(this.launchJSON,JSON.stringify(editedFile,null,"\t"),{
-        encoding: 'utf-8',
-      });
+      this.inputs[element.label] = newValue;
+      element.value = newValue;
+      const folders =vscode.workspace.workspaceFolders; 
+      if(folders){
+        const config = vscode.workspace.getConfiguration(
+          'launch',
+          folders[0].uri
+        );
+        config.update(`variables`,this.inputs);
+      }
+      this.refresh();
     }
   }
 }
@@ -97,7 +97,6 @@ export class Option extends vscode.TreeItem {
 	constructor(
 		public readonly label: string,
     public  value: string,
-		private readonly inputType: string,
 		public readonly collapsibleState: vscode.TreeItemCollapsibleState,
 		public command?: vscode.Command
 	) {
