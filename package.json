@@ -10,7 +10,8 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:extendeddebugging.helloWorld"
+    "onCommand:extendeddebugging.helloWorld",
+    "onView:extended"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -24,10 +25,18 @@
     },
     "commands": [
       {
-        "command": "extendeddebugging.helloWorld",
-        "title": "Hello World"
+        "command": "extendeddebugging.editValue",
+        "title": "Edit"
       }
-    ]
+    ],
+    "menus": {
+      "view/item/context": [
+        {
+          "command": "extendeddebugging.editValue",
+          "when": "viewItem == option"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "yarn run compile",
