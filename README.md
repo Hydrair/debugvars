@@ -8,10 +8,10 @@ When in debug view, there is a tree view listing all the elements of `variables`
 
 ## Requirements
 
-- A well formatted `launch.json` without comments
+- VS Code 1.90 or newer
 
 ## Usage
-Add a new property `variables` to your `launch.json`. To use them put `{config:launch.variables.VariableName}` in your launch configuration.
+Add a new property `variables` to your `launch.json`. To use them put `${config:launch.variables.VariableName}` in your launch configuration.
 
 For example: 
 ```
@@ -41,11 +41,19 @@ For example:
 In the `Debug` view in VS Code is a new TreeView. Clicking on a variable prompts for a new value and writes the edited file back. The launch configuration then uses the values in `variables`
 ## Known Issues
 
+- VS Code's `launch.json` schema does not know the `variables` property and shows a "Property variables is not allowed" warning. It can be ignored.
+
 
 ## Release Notes
 
 Users appreciate release notes as you update your extension.
 
+### 1.1.0
+- Works with current VS Code versions (tested on 1.90 and 1.144).
+- No longer fails when `launch.json` has no `variables`.
+- The view updates when `launch.json` is edited by hand.
+- Writes go to the workspace folder's `launch.json` (also in multi-root workspaces).
+- Updated build and test tooling.
 ### 0.0.3
 Cleaned up some code.
 ### 0.0.2

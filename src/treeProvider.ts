@@ -4,25 +4,35 @@ interface LaunchVariable {
   value: string;
   label: string;
 }
-export class LaunchProvider implements vscode.TreeDataProvider<Option> {
+export class LaunchProvider implements vscode.TreeDataProvider<Option>, vscode.Disposable {
 
 	private _onDidChangeTreeData: vscode.EventEmitter<Option | undefined | void> = new vscode.EventEmitter<Option | undefined | void>();
 	readonly onDidChangeTreeData: vscode.Event<Option | undefined | void> = this._onDidChangeTreeData.event;
   inputs: {[k:string]: string} = {};
-  launchJSON: string;
+  private configListener: vscode.Disposable;
 
-	constructor(private rootPath: string ) {
-    this.launchJSON = `${rootPath}/.vscode/launch.json`;
+	constructor() {
     this.init();
+    // pick up changes made directly in launch.json
+    this.configListener = vscode.workspace.onDidChangeConfiguration(e => {
+      if (e.affectsConfiguration('launch')) {
+        this.refreshManually();
+      }
+    });
 	}
 
+  private get workspaceFolder(): vscode.WorkspaceFolder | undefined {
+    return vscode.workspace.workspaceFolders?.[0];
+  }
+
+  // scoped to the folder so reads and writes use its .vscode/launch.json
+  private getLaunchConfig(): vscode.WorkspaceConfiguration {
+    return vscode.workspace.getConfiguration('launch', this.workspaceFolder?.uri);
+  }
+
   private init(): void {
-    if(this.launchJSON){
-      const config = vscode.workspace.getConfiguration(
-        'launch'
-      );
-      this.inputs=JSON.parse(JSON.stringify(config.get('variables')));
-    }
+    // copy, the returned configuration object is read-only; `variables` may be missing
+    this.inputs = { ...this.getLaunchConfig().get<{[k:string]: string}>('variables') };
   }
 
 	refresh(): void {
@@ -39,16 +49,10 @@ export class LaunchProvider implements vscode.TreeDataProvider<Option> {
 	}
 
 	getChildren(element?: Option): Thenable<Option[]> {
-		if (!this.launchJSON) {
-			vscode.window.showInformationMessage('No launch.json found in workspace');
-			return Promise.resolve([]);
-		}
-
-		if (element) {
+		if (element || !this.workspaceFolder) {
       return Promise.resolve([]);
-    } else {
-      return Promise.resolve(this.getInputsInLaunchJson());
     }
+    return Promise.resolve(this.getInputsInLaunchJson());
 	}
 
   private toOpt(option: LaunchVariable){
@@ -58,36 +62,41 @@ export class LaunchProvider implements vscode.TreeDataProvider<Option> {
       command: "debugvars.editValue",
       arguments: [item]
     };
-    return item; 
+    return item;
   };
 
   private getInputsInLaunchJson(){
-      const opts = [];
-      if(this.launchJSON){ 
-        for (const key in this.inputs) {
-          opts.push(this.toOpt(
-            {value:this.inputs[key],label:key}
-          ));
-        }
+      const opts = [];
+      for (const key in this.inputs) {
+        opts.push(this.toOpt(
+          {value:this.inputs[key],label:key}
+        ));
       }
       return opts;
   }
 
   public async editValue(element: Option){
+    if (!element || !this.workspaceFolder) {
+      return;
+    }
     const newValue = await vscode.window.showInputBox({
       placeHolder: element.value,
       prompt: `Enter a new value for ${element.label}`,
     });
     if( newValue !== undefined ){
       this.inputs[element.label] = newValue;
-      if(this.launchJSON){
-        const config = vscode.workspace.getConfiguration(
-          'launch',
-        );
-        config.update(`variables`,this.inputs);
+      try {
+        await this.getLaunchConfig().update('variables', this.inputs, vscode.ConfigurationTarget.WorkspaceFolder);
+      } catch (e) {
+        vscode.window.showErrorMessage(`DebugVars: could not write launch.json: ${e}`);
       }
       this.refresh();
     }
+  }
+
+  dispose(): void {
+    this.configListener.dispose();
+    this._onDidChangeTreeData.dispose();
   }
 }
 
@@ -99,7 +108,7 @@ export class Option extends vscode.TreeItem {
 		public readonly collapsibleState: vscode.TreeItemCollapsibleState,
 		public command?: vscode.Command
 	) {
-   
+
 		super(label, collapsibleState);
 
 		this.tooltip = `${this.label}`;

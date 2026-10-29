@@ -9,16 +9,13 @@
     "url": "https://github.com/Hydrair/debugvars.git"
   },
   "publisher": "hydrair",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "engines": {
-    "vscode": "^1.72.0"
+    "vscode": "^1.90.0"
   },
   "categories": [
     "Other",
     "Debuggers"
-  ],
-  "activationEvents": [
-    "onView:extended"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -30,6 +27,12 @@
         }
       ]
     },
+    "viewsWelcome": [
+      {
+        "view": "extended",
+        "contents": "No variables found. Add a \"variables\" object to your launch.json and reference its entries with ${config:launch.variables.Name}."
+      }
+    ],
     "commands": [
       {
         "command": "debugvars.editValue",
@@ -62,6 +65,12 @@
           "when": "view == extended",
           "group": "navigation"
         }
+      ],
+      "commandPalette": [
+        {
+          "command": "debugvars.editValue",
+          "when": "false"
+        }
       ]
     }
   },
@@ -70,20 +79,20 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "pretest": "yarn run compile && yarn run lint",
-    "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js"
+    "lint": "eslint src",
+    "test": "vscode-test",
+    "package": "vsce package --yarn"
   },
   "devDependencies": {
-    "@types/vscode": "^1.72.0",
-    "@types/glob": "^8.0.0",
-    "@types/mocha": "^10.0.0",
-    "@types/node": "16.x",
-    "@typescript-eslint/eslint-plugin": "^5.38.1",
-    "@typescript-eslint/parser": "^5.38.1",
-    "eslint": "^8.24.0",
-    "glob": "^8.0.3",
-    "mocha": "^10.0.0",
-    "typescript": "^4.8.4",
-    "@vscode/test-electron": "^2.1.5"
+    "@types/mocha": "^10.0.10",
+    "@types/node": "22",
+    "@types/vscode": "1.90.0",
+    "@vscode/test-cli": "^0.0.15",
+    "@vscode/test-electron": "^3.1.0",
+    "@vscode/vsce": "^4.1.0",
+    "eslint": "^10.13.0",
+    "mocha": "^12.0.3",
+    "typescript": "~6.0.0",
+    "typescript-eslint": "^8.72.1"
   }
 }

@@ -1,0 +1,16 @@
+{
+  "name": "debugvars-probe-debugger",
+  "publisher": "hydrair",
+  "version": "0.0.0",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "contributes": {
+    "debuggers": [
+      {
+        "type": "debugvars-probe",
+        "label": "DebugVars test probe"
+      }
+    ]
+  }
+}

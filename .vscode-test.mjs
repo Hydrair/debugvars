@@ -1,0 +1,12 @@
+import { defineConfig } from '@vscode/test-cli';
+
+export default defineConfig({
+  files: 'out/test/**/*.test.js',
+  workspaceFolder: './test-fixtures/workspace',
+  extensionDevelopmentPath: ['.', './test-fixtures/probe-debugger'],
+  launchArgs: ['--disable-extensions'],
+  mocha: {
+    ui: 'tdd',
+    timeout: 20000
+  }
+});
