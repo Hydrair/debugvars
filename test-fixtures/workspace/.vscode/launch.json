@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "debugvars-probe",
+      "request": "launch",
+      "name": "probe",
+      "title": "${config:launch.variables.Title}"
+    }
+  ],
+  "variables": {
+    "Title": "myTest",
+    "Headless": "true"
+  }
+}
